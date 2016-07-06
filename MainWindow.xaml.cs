@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace KinectStreams
 {
@@ -31,6 +32,7 @@ namespace KinectStreams
 
         bool _displayBody = true;
         bool _recordBody = false;
+        string filePath = "";
 
         #endregion
 
@@ -122,8 +124,10 @@ namespace KinectStreams
 
                     frame.GetAndRefreshBodyData(_bodies);
 
-                    foreach (var body in _bodies)
-                    {
+                    Body body = _bodies[0];
+
+                    //foreach (var body in _bodies)
+                    //{
                         if (body != null)
                         {
                             if (body.IsTracked)
@@ -132,11 +136,14 @@ namespace KinectStreams
                                 if (_displayBody)
                                 {
                                     canvas.DrawSkeleton(body);
-                                    
+                                }
+                                if (_recordBody) 
+                                {
+                                    body.WriteSkeleton(filePath);
                                 }
                             }
                         }
-                    }
+                    //}
                 }
             }
         }
@@ -164,8 +171,19 @@ namespace KinectStreams
         private void Record_Click(object sender, RoutedEventArgs e)
         {
             _recordBody = !_recordBody;
-            // create a csv file
+            // create a csv file and write file header
             string currPath = System.IO.Directory.GetCurrentDirectory();
+            string folder = "recordings";
+            string recordPath = System.IO.Path.Combine(currPath, folder);
+            if (!Directory.Exists(recordPath))
+            {
+                Directory.CreateDirectory(recordPath);
+            }
+            string filename = DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss tt");
+            filename = filename + ".csv";
+            filePath = System.IO.Path.Combine(recordPath, filename);
+            string[] writtentext = {"lala"};
+            File.WriteAllLines(filePath, writtentext);
 
         }
 

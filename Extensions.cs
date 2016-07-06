@@ -141,6 +141,143 @@ namespace KinectStreams
 
         #region Drawing
 
+        public static void WriteSkeleton(this Body body, string filePath)
+        {
+            if (body == null) return;
+            
+            string headx = body.Joints[JointType.Head].Position.X.ToString();
+            string heady = body.Joints[JointType.Head].Position.Y.ToString();
+            string headz = body.Joints[JointType.Head].Position.Z.ToString();
+            int heads = (int)body.Joints[JointType.Head].TrackingState;
+
+            string neckx = body.Joints[JointType.Neck].Position.X.ToString();
+            string necky = body.Joints[JointType.Neck].Position.Y.ToString();
+            string neckz = body.Joints[JointType.Neck].Position.Z.ToString();
+            int necks = (int)body.Joints[JointType.Neck].TrackingState;
+
+            string spineshoulderx = body.Joints[JointType.SpineShoulder].Position.X.ToString();
+            string spineshouldery = body.Joints[JointType.SpineShoulder].Position.Y.ToString();
+            string spineshoulderz = body.Joints[JointType.SpineShoulder].Position.Z.ToString();
+            int spineshoulders = (int)body.Joints[JointType.SpineShoulder].TrackingState;
+
+            string spinemidx = body.Joints[JointType.SpineMid].Position.X.ToString();
+            string spinemidy = body.Joints[JointType.SpineMid].Position.Y.ToString();
+            string spinemidz = body.Joints[JointType.SpineMid].Position.Z.ToString();
+            int spinemids = (int)body.Joints[JointType.SpineMid].TrackingState;
+
+            string spinebasex = body.Joints[JointType.SpineBase].Position.X.ToString();
+            string spinebasey = body.Joints[JointType.SpineBase].Position.Y.ToString();
+            string spinebasez = body.Joints[JointType.SpineBase].Position.Z.ToString();
+            int spinebases = (int)body.Joints[JointType.SpineBase].TrackingState;
+
+            string shoulderrightx = body.Joints[JointType.ShoulderRight].Position.X.ToString();
+            string shoulderrighty = body.Joints[JointType.ShoulderRight].Position.Y.ToString();
+            string shoulderrightz = body.Joints[JointType.ShoulderRight].Position.Z.ToString();
+            string shoulderleftx = body.Joints[JointType.ShoulderLeft].Position.X.ToString();
+            string shoulderlefty = body.Joints[JointType.ShoulderLeft].Position.Y.ToString();
+            string shoulderleftz = body.Joints[JointType.ShoulderLeft].Position.Z.ToString();
+            int shoulderrights = (int)body.Joints[JointType.ShoulderRight].TrackingState;
+            int shoulderlefts = (int)body.Joints[JointType.ShoulderLeft].TrackingState;
+
+            string elbowrightx = body.Joints[JointType.ElbowRight].Position.X.ToString();
+            string elbowrighty = body.Joints[JointType.ElbowRight].Position.Y.ToString();
+            string elbowrightz = body.Joints[JointType.ElbowRight].Position.Z.ToString();
+             string elbowleftx = body.Joints[JointType.ElbowLeft].Position.X.ToString();
+             string elbowlefty = body.Joints[JointType.ElbowLeft].Position.Y.ToString();
+             string elbowleftz = body.Joints[JointType.ElbowLeft].Position.Z.ToString();
+            int elbowrights = (int)body.Joints[JointType.ElbowRight].TrackingState;
+             int elbowlefts = (int)body.Joints[JointType.ElbowLeft].TrackingState;
+           
+             string wristrightx = body.Joints[JointType.WristRight].Position.X.ToString();
+             string wristrighty = body.Joints[JointType.WristRight].Position.Y.ToString();
+             string wristrightz = body.Joints[JointType.WristRight].Position.Z.ToString();
+             string wristleftx = body.Joints[JointType.WristLeft].Position.X.ToString();
+             string wristlefty = body.Joints[JointType.WristLeft].Position.Y.ToString();
+             string wristleftz = body.Joints[JointType.WristLeft].Position.Z.ToString();
+            int wristrights = (int)body.Joints[JointType.WristRight].TrackingState;
+             int wristlefts = (int)body.Joints[JointType.WristLeft].TrackingState;
+
+            string handrightx = body.Joints[JointType.HandRight].Position.X.ToString();
+            string handrighty = body.Joints[JointType.HandRight].Position.Y.ToString();
+            string handrightz = body.Joints[JointType.HandRight].Position.Z.ToString();
+             string handleftx = body.Joints[JointType.HandLeft].Position.X.ToString();
+             string handlefty = body.Joints[JointType.HandLeft].Position.Y.ToString();
+             string handleftz = body.Joints[JointType.HandLeft].Position.Z.ToString();
+            int handrights = (int)body.Joints[JointType.HandRight].TrackingState;
+             int handlefts = (int)body.Joints[JointType.HandLeft].TrackingState;
+                                                      
+            string handtiprightx = body.Joints[JointType.HandTipRight].Position.X.ToString();
+            string handtiprighty = body.Joints[JointType.HandTipRight].Position.Y.ToString();
+            string handtiprightz = body.Joints[JointType.HandTipRight].Position.Z.ToString();
+             string handtipleftx = body.Joints[JointType.HandTipLeft].Position.X.ToString();
+             string handtiplefty = body.Joints[JointType.HandTipLeft].Position.Y.ToString();
+             string handtipleftz = body.Joints[JointType.HandTipLeft].Position.Z.ToString();
+            int handtiprights = (int)body.Joints[JointType.HandTipRight].TrackingState;
+             int handtiplefts = (int)body.Joints[JointType.HandTipLeft].TrackingState;
+
+             string position = headx + "," +
+                               heady + "," +
+                               headz + "," +
+                               heads.ToString() + "," +
+                               neckx + "," +
+                               necky + "," +
+                               neckz + "," +
+                               necks.ToString() + "," +
+                               spineshoulderx + "," +
+                               spineshouldery + "," +
+                               spineshoulderz + "," +
+                               spineshoulders.ToString() + "," +
+                               spinemidx + "," +
+                               spinemidy + "," +
+                               spinemidz + "," +
+                               spinemids.ToString() + "," +
+                               spinebasex + "," +
+                               spinebasey + "," +
+                               spinebasez + "," +
+                               spinebases.ToString() + "," +
+                               shoulderrightx + "," +
+                               shoulderrighty + "," +
+                               shoulderrightz + "," +
+                               shoulderrights.ToString() + "," +
+                               shoulderleftx + "," +
+                               shoulderlefty + "," +
+                               shoulderleftz + "," +
+                               shoulderlefts.ToString() + "," +
+                               elbowrightx + "," +
+                               elbowrighty + "," +
+                               elbowrightz + "," +
+                               elbowrights.ToString() + "," +
+                               elbowleftx + "," +
+                               elbowlefty + "," +
+                               elbowleftz + "," +
+                               elbowlefts.ToString() + "," +
+                               wristrightx + "," +
+                               wristrighty + "," +
+                               wristrightz + "," +
+                               wristrights.ToString() + "," +
+                               wristleftx + "," +
+                               wristlefty + "," +
+                               wristleftz + "," +
+                               wristlefts.ToString() + "," +
+                               handrightx + "," +
+                               handrighty + "," +
+                               handrightz + "," +
+                               handrights.ToString() + "," +
+                               handleftx + "," +
+                               handlefty + "," +
+                               handleftz + "," +
+                               handlefts.ToString() + "," +
+                               handtiprightx + "," +
+                               handtiprighty + "," +
+                               handtiprightz + "," +
+                               handtiprights.ToString() + "," +
+                               handtipleftx + "," +
+                               handtiplefty + "," +
+                               handtipleftz + "," +
+                               handtiprights.ToString();
+
+        }
+
         public static void DrawSkeleton(this Canvas canvas, Body body)
         {
             if (body == null) return;
