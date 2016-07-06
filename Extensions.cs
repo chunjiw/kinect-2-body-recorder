@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace KinectStreams
 {
@@ -215,7 +216,7 @@ namespace KinectStreams
             int handtiprights = (int)body.Joints[JointType.HandTipRight].TrackingState;
              int handtiplefts = (int)body.Joints[JointType.HandTipLeft].TrackingState;
 
-             string position = headx + "," +
+             string[] position =  { headx + "," +
                                heady + "," +
                                headz + "," +
                                heads.ToString() + "," +
@@ -274,7 +275,8 @@ namespace KinectStreams
                                handtipleftx + "," +
                                handtiplefty + "," +
                                handtipleftz + "," +
-                               handtiprights.ToString();
+                               handtiprights.ToString() };
+             File.AppendAllLines(filePath, position);
 
         }
 
