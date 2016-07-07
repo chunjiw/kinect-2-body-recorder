@@ -142,10 +142,10 @@ namespace KinectStreams
 
         #region Drawing
 
-        public static void WriteSkeleton(this Body body, string filePath)
+        public static void WriteSkeleton(this Body body, string filePath, string time)
         {
             if (body == null) return;
-            
+
             string headx = body.Joints[JointType.Head].Position.X.ToString();
             string heady = body.Joints[JointType.Head].Position.Y.ToString();
             string headz = body.Joints[JointType.Head].Position.Z.ToString();
@@ -216,7 +216,8 @@ namespace KinectStreams
             int handtiprights = (int)body.Joints[JointType.HandTipRight].TrackingState;
              int handtiplefts = (int)body.Joints[JointType.HandTipLeft].TrackingState;
 
-             string[] position =  { headx + "," +
+             string[] position =  { time + "," + 
+                               headx + "," +
                                heady + "," +
                                headz + "," +
                                heads.ToString() + "," +
@@ -275,7 +276,7 @@ namespace KinectStreams
                                handtipleftx + "," +
                                handtiplefty + "," +
                                handtipleftz + "," +
-                               handtiprights.ToString() };
+                               handtiplefts.ToString() };
              File.AppendAllLines(filePath, position);
 
         }

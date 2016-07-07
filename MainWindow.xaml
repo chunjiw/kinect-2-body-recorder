@@ -11,7 +11,7 @@
                 <Button Content="Depth" Style="{StaticResource ButtonStyle}" Click="Depth_Click" />
                 <Button Content="Infrared" Style="{StaticResource ButtonStyle}" Click="Infrared_Click" />
                 <Button Content="Body" Style="{StaticResource ButtonStyle}" Click="Body_Click" />
-                <Button Content="Record" Style="{StaticResource ButtonStyle}" Click="Record_Click" />
+                <Button x:Name="recordButton" Content="Record" Style="{StaticResource ButtonStyle}" Click="Record_Click" />
             </StackPanel>
         </Grid>
     </Grid>

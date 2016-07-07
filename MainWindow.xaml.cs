@@ -33,6 +33,8 @@ namespace KinectStreams
         bool _displayBody = true;
         bool _recordBody = false;
         string filePath = "";
+        DateTime timeRecordingStarted;
+        ulong currentTrackingID = 0;
 
         #endregion
 
@@ -124,26 +126,40 @@ namespace KinectStreams
 
                     frame.GetAndRefreshBodyData(_bodies);
 
-                    Body body = _bodies[0];
+                    TimeSpan relativeTime = DateTime.Now - timeRecordingStarted;
+                    string time = relativeTime.TotalSeconds.ToString();
 
-                    //foreach (var body in _bodies)
-                    //{
+                    //Body body = _bodies[0];
+
+                    foreach (var body in _bodies)
+                    {
                         if (body != null)
                         {
                             if (body.IsTracked)
                             {
+
                                 // Draw skeleton.
                                 if (_displayBody)
                                 {
                                     canvas.DrawSkeleton(body);
                                 }
+                                // if trackingId not right, continue to next body
+                                if (currentTrackingID == 0)
+                                {
+                                    currentTrackingID = body.TrackingId;
+                                }
+                                else if (currentTrackingID != body.TrackingId)
+                                {
+                                    continue;
+                                }
+                                // write file
                                 if (_recordBody) 
                                 {
-                                    body.WriteSkeleton(filePath);
+                                    body.WriteSkeleton(filePath, time);
                                 }
                             }
                         }
-                    //}
+                    }
                 }
             }
         }
@@ -171,6 +187,13 @@ namespace KinectStreams
         private void Record_Click(object sender, RoutedEventArgs e)
         {
             _recordBody = !_recordBody;
+            if (_recordBody == false)
+            {
+                recordButton.Content = "Record";
+                return;
+            }
+            recordButton.Content = "Stop Recording";
+            currentTrackingID = 0;
             // create a csv file and write file header
             string currPath = System.IO.Directory.GetCurrentDirectory();
             string folder = "recordings";
@@ -179,10 +202,71 @@ namespace KinectStreams
             {
                 Directory.CreateDirectory(recordPath);
             }
-            string filename = DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss tt");
+            timeRecordingStarted = DateTime.Now;
+            string filename = timeRecordingStarted.ToString("yyyy-MM-dd HH-mm-ss");
             filename = filename + ".csv";
             filePath = System.IO.Path.Combine(recordPath, filename);
-            string[] writtentext = {"lala"};
+            string[] writtentext = {"time," + "headX," + 
+                                    "headY," +
+                                    "headZ," +
+                                    "headS," +
+                                    "neckX," + 
+                                    "neckY," +
+                                    "neckZ," +
+                                    "neckS," +
+                                    "spineShoulderX," + 
+                                    "spineShoulderY," +
+                                    "spineShoulderZ," +
+                                    "spineShoulderS," +
+                                    "spineMidX," + 
+                                    "spineMidY," +
+                                    "spineMidZ," +
+                                    "spineMidS," +
+                                    "spineBaseX," + 
+                                    "spineBaseY," +
+                                    "spineBaseZ," +
+                                    "spineBaseS," +
+                                    "shoulderRightX," + 
+                                    "shoulderRightY," +
+                                    "shoulderRightZ," +
+                                    "shoulderRightS," +
+                                    "shoulderLeftX," + 
+                                    "shoulderLeftY," +
+                                    "shoulderLeftZ," +
+                                    "shoulderLeftS," +
+                                    "elbowRightX," + 
+                                    "elbowRightY," +
+                                    "elbowRightZ," +
+                                    "elbowRightS," +
+                                    "elbowLeftX," + 
+                                    "elbowLeftY," +
+                                    "elbowLeftZ," +
+                                    "elbowLeftS," +
+                                    "wristRightX," + 
+                                    "wristRightY," +
+                                    "wristRightZ," +
+                                    "wristRightS," +
+                                    "wristLeftX," + 
+                                    "wristLeftY," +
+                                    "wristLeftZ," +
+                                    "wristLeftS," +
+                                    "handRightX," + 
+                                    "handRightY," +
+                                    "handRightZ," +
+                                    "handRightS," +
+                                    "handLeftX," + 
+                                    "handLeftY," +
+                                    "handLeftZ," +
+                                    "handLeftS," +
+                                    "handTipRightX," + 
+                                    "handTipRightY," +
+                                    "handTipRightZ," +
+                                    "handTipRightS," +
+                                    "handTipLeftX," + 
+                                    "handTipLeftY," +
+                                    "handTipLeftZ," +
+                                    "handTipLeftS"
+                                   };
             File.WriteAllLines(filePath, writtentext);
 
         }
