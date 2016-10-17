@@ -29,6 +29,8 @@ namespace KinectStreams
         KinectSensor _sensor;
         MultiSourceFrameReader _reader;
         IList<Body> _bodies;
+        IList<Body> _pbodies;   // bodies at previous frame
+        IList<Body> _ppbodies;
 
         bool _displayBody = true;
         bool _recordBody = false;
@@ -157,6 +159,9 @@ namespace KinectStreams
                                 {
                                     body.WriteSkeleton(filePath, time);
                                 }
+                                // refresh previous bodies
+                                _ppbodies = _pbodies;
+                                _pbodies = _bodies;
                             }
                         }
                     }
@@ -279,5 +284,45 @@ namespace KinectStreams
         Color,
         Depth,
         Infrared
+    }
+
+    public class SpikeCutter
+    {
+        private float wristThreshold = 0.1f;
+        private float elbowThreshold = 0.05f;
+        private int flag = 0;
+        public Body pbody;
+        public Body ppbody;
+        public ulong currentTrackingID;
+
+        public SpikeCutter(ulong newTrackingID)
+        {
+            currentTrackingID = newTrackingID;
+        }
+
+        public void SetPreBody(Body _pbody, Body _ppbody)
+        {
+            pbody = _pbody;
+            ppbody = _ppbody;
+        }
+
+        public Body CutSpike(Body body)
+        {
+            if ( Norm(body.Joints[JointType.WristRight].Position.X - 2 * pbody.Joints[JointType.WristRight].Position.X + ppbody.Joints[JointType.WristRight].Position.X,
+                    body.Joints[JointType.WristRight].Position.Y - 2 * pbody.Joints[JointType.WristRight].Position.Y + ppbody.Joints[JointType.WristRight].Position.Y,
+                    body.Joints[JointType.WristRight].Position.Z - 2 * pbody.Joints[JointType.WristRight].Position.Z + ppbody.Joints[JointType.WristRight].Position.Z) > wristThreshold)
+            {
+                if (flag == 1)
+                {
+                    pbody.Joints[JointType.WristRight].Position.X = body.Joints[JointType.WristRight].Position.X;
+                }
+            }
+            return body;
+        }
+
+        private float Norm(float x, float y, float z)
+        {
+            return (float)Math.Sqrt(Math.Pow((double)x, 2) + Math.Pow((double)y, 2) + Math.Pow((double)z, 2) );
+        }
     }
 }
