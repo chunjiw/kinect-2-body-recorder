@@ -29,8 +29,6 @@ namespace KinectStreams
         KinectSensor _sensor;
         MultiSourceFrameReader _reader;
         IList<Body> _bodies;
-        IList<Body> _pbodies;   // bodies at previous frame
-        IList<Body> _ppbodies;
 
         bool _displayBody = true;
         bool _recordBody = false;
@@ -139,7 +137,7 @@ namespace KinectStreams
                         {
                             if (body.IsTracked)
                             {
-
+                                SpikeCutter spikeCutter = new SpikeCutter();
                                 // Draw skeleton.
                                 if (_displayBody)
                                 {
@@ -148,7 +146,7 @@ namespace KinectStreams
                                 // if trackingId not right, continue to next body
                                 if (currentTrackingID == 0)
                                 {
-                                    currentTrackingID = body.TrackingId;
+                                    currentTrackingID = body.TrackingId;                                    
                                 }
                                 else if (currentTrackingID != body.TrackingId)
                                 {
@@ -158,10 +156,19 @@ namespace KinectStreams
                                 if (_recordBody) 
                                 {
                                     body.WriteSkeleton(filePath, time);
+                                    if (spikeCutter.frameNo == 0)
+                                    {
+                                        spikeCutter.SetPPreBody(body);
+                                    }
+                                    if (spikeCutter.frameNo == 1)
+                                    {
+                                        spikeCutter.SetPreBody(body);
+                                    }
+                                    if (spikeCutter.frameNo > 1)
+                                    {
+                                        spikeCutter.CutSpike(body);
+                                    }
                                 }
-                                // refresh previous bodies
-                                _ppbodies = _pbodies;
-                                _pbodies = _bodies;
                             }
                         }
                     }
@@ -288,41 +295,109 @@ namespace KinectStreams
 
     public class SpikeCutter
     {
-        private float wristThreshold = 0.1f;
-        private float elbowThreshold = 0.05f;
-        private int flag = 0;
-        public Body pbody;
-        public Body ppbody;
-        public ulong currentTrackingID;
+        private static int numJoints = 4;
+        private float[] threshold = { 0.1f, 0.1f, 0.05f, 0.05f };
+        private int[] flag = { 0, 0, 0, 0 };
+        private JointType[] joints = { JointType.WristLeft, JointType.WristRight, JointType.ElbowLeft, JointType.ElbowRight };
+        private float[] cbody = Enumerable.Repeat(0f, numJoints * 3).ToArray();
+        private float[] pbody = Enumerable.Repeat(0f, numJoints * 3).ToArray();
+        private float[] ppbody = Enumerable.Repeat(0f, numJoints * 3).ToArray();
+        public int frameNo;
 
-        public SpikeCutter(ulong newTrackingID)
+        public SpikeCutter()
         {
-            currentTrackingID = newTrackingID;
+            frameNo = 0;
         }
 
-        public void SetPreBody(Body _pbody, Body _ppbody)
+        public void SetPreBody(Body _pbody)
         {
-            pbody = _pbody;
-            ppbody = _ppbody;
-        }
-
-        public Body CutSpike(Body body)
-        {
-            if ( Norm(body.Joints[JointType.WristRight].Position.X - 2 * pbody.Joints[JointType.WristRight].Position.X + ppbody.Joints[JointType.WristRight].Position.X,
-                    body.Joints[JointType.WristRight].Position.Y - 2 * pbody.Joints[JointType.WristRight].Position.Y + ppbody.Joints[JointType.WristRight].Position.Y,
-                    body.Joints[JointType.WristRight].Position.Z - 2 * pbody.Joints[JointType.WristRight].Position.Z + ppbody.Joints[JointType.WristRight].Position.Z) > wristThreshold)
+            for (int i = 0; i < numJoints; i++) 
             {
-                if (flag == 1)
+                pbody[3 * i + 0] = _pbody.Joints[joints[i]].Position.X;
+                pbody[3 * i + 1] = _pbody.Joints[joints[i]].Position.Y;
+                pbody[3 * i + 2] = _pbody.Joints[joints[i]].Position.Z;
+                frameNo++;
+            }
+        }
+
+        public void SetPPreBody(Body _ppbody)
+        {
+            for (int i = 0; i < numJoints; i++)
+            {
+                ppbody[3 * i + 0] = _ppbody.Joints[joints[i]].Position.X;
+                ppbody[3 * i + 1] = _ppbody.Joints[joints[i]].Position.Y;
+                ppbody[3 * i + 2] = _ppbody.Joints[joints[i]].Position.Z;
+                frameNo++;
+            }
+        }
+
+        public void SetCurrentBody(Body _body)
+        {
+            for (int i = 0; i < numJoints; i++)
+            {
+                cbody[3 * i + 0] = _body.Joints[joints[i]].Position.X;
+                cbody[3 * i + 1] = _body.Joints[joints[i]].Position.Y;
+                cbody[3 * i + 2] = _body.Joints[joints[i]].Position.Z;
+                frameNo++;
+            }
+        }
+
+        public float[] CutSpike(Body _body)
+        {
+            SetCurrentBody(_body);
+            for (int i = 0; i < numJoints; i++)
+            {
+                if (Norm(cbody[3 * i + 0] - 2 * pbody[3 * i + 0] + ppbody[3 * i + 0],
+                        cbody[3 * i + 1] - 2 * pbody[3 * i + 1] + ppbody[3 * i + 1],
+                        cbody[3 * i + 2] - 2 * pbody[3 * i + 2] + ppbody[3 * i + 2]) > threshold[i])
                 {
-                    pbody.Joints[JointType.WristRight].Position.X = body.Joints[JointType.WristRight].Position.X;
+                    if (flag[i] == 1)
+                    {
+                        pbody[3 * i + 0] = cbody[3 * i + 0];
+                        pbody[3 * i + 1] = cbody[3 * i + 1];
+                        pbody[3 * i + 2] = cbody[3 * i + 2];
+                        flag[i] = 0;
+                        continue;
+                    }
+                    float nd1 = Norm(cbody[3 * i + 0] - pbody[3 * i + 0], cbody[3 * i + 1] - pbody[3 * i + 1], cbody[3 * i + 2] - pbody[3 * i + 2]);
+                    float nd2 = Norm(cbody[3 * i + 0] - ppbody[3 * i + 0], cbody[3 * i + 1] - ppbody[3 * i + 1], cbody[3 * i + 2] - ppbody[3 * i + 2]);
+                    float c12 = CrossNorm(cbody[3 * i + 0] - pbody[3 * i + 0], cbody[3 * i + 1] - pbody[3 * i + 1], cbody[3 * i + 2] - pbody[3 * i + 2],
+                        cbody[3 * i + 0] - ppbody[3 * i + 0], cbody[3 * i + 1] - ppbody[3 * i + 1], cbody[3 * i + 2] - ppbody[3 * i + 2]);
+                    if (nd2 < nd1 || nd2*nd2 < 2 * c12)
+                    {
+                        flag[i] = 2;
+                        pbody[3 * i + 0] = (ppbody[3 * i + 0] + cbody[3 * i + 0]) / 2;
+                        pbody[3 * i + 1] = (ppbody[3 * i + 1] + cbody[3 * i + 1]) / 2;
+                        pbody[3 * i + 2] = (ppbody[3 * i + 2] + cbody[3 * i + 2]) / 2;
+                    } else {
+                        flag[i] = 1;
+                        cbody[3 * i + 0] = 2 * pbody[3 * i + 0] - ppbody[3 * i + 0];
+                        cbody[3 * i + 1] = 2 * pbody[3 * i + 1] - ppbody[3 * i + 1];
+                        cbody[3 * i + 2] = 2 * pbody[3 * i + 2] - ppbody[3 * i + 2];
+                    }
+
+                } else
+                {
+                    flag[i] = 0;
                 }
             }
-            return body;
+            ppbody = pbody;
+            pbody = cbody;
+            return ppbody;
         }
 
         private float Norm(float x, float y, float z)
         {
             return (float)Math.Sqrt(Math.Pow((double)x, 2) + Math.Pow((double)y, 2) + Math.Pow((double)z, 2) );
         }
+
+        private float CrossNorm(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            float x = y1 * z2 - z1 * y2;
+            float y = z1 * x2 - x1 * z2;
+            float z = x1 * y2 - y1 * x2;
+            return Norm(x, y, z);
+        }
+
     }
 }
