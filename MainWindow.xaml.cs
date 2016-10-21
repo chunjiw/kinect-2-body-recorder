@@ -29,6 +29,7 @@ namespace KinectStreams
         KinectSensor _sensor;
         MultiSourceFrameReader _reader;
         IList<Body> _bodies;
+        SpikeCutter spikeCutter;
 
         bool _displayBody = true;
         bool _recordBody = false;
@@ -137,7 +138,6 @@ namespace KinectStreams
                         {
                             if (body.IsTracked)
                             {
-                                SpikeCutter spikeCutter = new SpikeCutter();
                                 // Draw skeleton.
                                 if (_displayBody)
                                 {
@@ -159,14 +159,14 @@ namespace KinectStreams
                                     if (spikeCutter.frameNo == 0)
                                     {
                                         spikeCutter.SetPPreBody(body);
-                                    }
+                                    } else
                                     if (spikeCutter.frameNo == 1)
                                     {
                                         spikeCutter.SetPreBody(body);
-                                    }
-                                    if (spikeCutter.frameNo > 1)
+                                    } else
                                     {
                                         spikeCutter.CutSpike(body);
+                                        spikeCutter.WriteSkeleton(filePath, time);
                                     }
                                 }
                             }
@@ -218,7 +218,7 @@ namespace KinectStreams
             string filename = timeRecordingStarted.ToString("yyyy-MM-dd HH-mm-ss");
             filename = filename + ".csv";
             filePath = System.IO.Path.Combine(recordPath, filename);
-            string[] writtentext = {"time," + "headX," + 
+            string writtentext = "time," + "headX," + 
                                     "headY," +
                                     "headZ," +
                                     "headS," +
@@ -277,10 +277,23 @@ namespace KinectStreams
                                     "handTipLeftX," + 
                                     "handTipLeftY," +
                                     "handTipLeftZ," +
-                                    "handTipLeftS"
-                                   };
-            File.WriteAllLines(filePath, writtentext);
-
+                                    "handTipLeftS," +
+                                    // despiked data
+                                    "time2," +
+                                    "wristRightDespikedX," +
+                                    "wristRightDespikedY," +
+                                    "wristRightDespikedZ," +
+                                    "wristLeftDespikedX," +
+                                    "wristLeftDespikedY," +
+                                    "wristLeftDespikedZ," +
+                                    "elbowRightDespikedX," +
+                                    "elbowRightDespikedY," +
+                                    "elbowRightDespikedZ," +
+                                    "elbowLeftDespikedX," +
+                                    "elbowLeftDespikedY," +
+                                    "elbowLeftDespikedZ" ;
+            File.WriteAllText(filePath, writtentext);
+            spikeCutter = new SpikeCutter();
         }
 
         #endregion
@@ -298,13 +311,18 @@ namespace KinectStreams
         private static int numJoints = 4;
         private float[] threshold = { 0.1f, 0.1f, 0.05f, 0.05f };
         private int[] flag = { 0, 0, 0, 0 };
-        private JointType[] joints = { JointType.WristLeft, JointType.WristRight, JointType.ElbowLeft, JointType.ElbowRight };
+        private JointType[] joints = { JointType.WristRight, JointType.WristLeft, JointType.ElbowRight, JointType.ElbowLeft };
         private float[] cbody = Enumerable.Repeat(0f, numJoints * 3).ToArray();
         private float[] pbody = Enumerable.Repeat(0f, numJoints * 3).ToArray();
         private float[] ppbody = Enumerable.Repeat(0f, numJoints * 3).ToArray();
-        public int frameNo;
+        public int frameNo = 0;
 
         public SpikeCutter()
+        {
+            frameNo = 0;
+        }
+
+        public void ResetCutter()
         {
             frameNo = 0;
         }
@@ -342,7 +360,7 @@ namespace KinectStreams
             }
         }
 
-        public float[] CutSpike(Body _body)
+        public void CutSpike(Body _body)
         {
             SetCurrentBody(_body);
             for (int i = 0; i < numJoints; i++)
@@ -383,7 +401,19 @@ namespace KinectStreams
             }
             ppbody = pbody;
             pbody = cbody;
-            return ppbody;
+        }
+
+        public void WriteSkeleton(string filePath, string time)
+        {
+            string despi = "," + time + ",";
+            for (int i = 0; i < numJoints*3; i++)
+            {
+                if (i < numJoints * 3 - 1)
+                    despi = despi + ppbody[i].ToString() + ",";
+                else
+                    despi = despi + ppbody[i].ToString();
+            }
+            File.AppendAllText(filePath, despi);
         }
 
         private float Norm(float x, float y, float z)

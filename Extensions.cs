@@ -216,7 +216,7 @@ namespace KinectStreams
             int handtiprights = (int)body.Joints[JointType.HandTipRight].TrackingState;
              int handtiplefts = (int)body.Joints[JointType.HandTipLeft].TrackingState;
 
-             string[] position =  { time + "," + 
+             string position =  "\n" + time + "," + 
                                headx + "," +
                                heady + "," +
                                headz + "," +
@@ -276,9 +276,8 @@ namespace KinectStreams
                                handtipleftx + "," +
                                handtiplefty + "," +
                                handtipleftz + "," +
-                               handtiplefts.ToString() };
-             File.AppendAllLines(filePath, position);
-
+                               handtiplefts.ToString() ;
+             File.AppendAllText(filePath, position);
         }
 
         public static void DrawSkeleton(this Canvas canvas, Body body)
