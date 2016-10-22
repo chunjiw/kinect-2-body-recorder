@@ -163,8 +163,7 @@ namespace KinectStreams
                                     if (spikeCutter.frameNo == 1)
                                     {
                                         spikeCutter.SetPreBody(body);
-                                    } else
-                                    {
+                                    } else { 
                                         spikeCutter.CutSpike(body);
                                         spikeCutter.WriteSkeleton(filePath, time);
                                     }
@@ -334,8 +333,8 @@ namespace KinectStreams
                 pbody[3 * i + 0] = _pbody.Joints[joints[i]].Position.X;
                 pbody[3 * i + 1] = _pbody.Joints[joints[i]].Position.Y;
                 pbody[3 * i + 2] = _pbody.Joints[joints[i]].Position.Z;
-                frameNo++;
             }
+            frameNo++;
         }
 
         public void SetPPreBody(Body _ppbody)
@@ -345,19 +344,19 @@ namespace KinectStreams
                 ppbody[3 * i + 0] = _ppbody.Joints[joints[i]].Position.X;
                 ppbody[3 * i + 1] = _ppbody.Joints[joints[i]].Position.Y;
                 ppbody[3 * i + 2] = _ppbody.Joints[joints[i]].Position.Z;
-                frameNo++;
             }
+            frameNo++;
         }
 
-        public void SetCurrentBody(Body _body)
+        private void SetCurrentBody(Body _body)
         {
             for (int i = 0; i < numJoints; i++)
             {
                 cbody[3 * i + 0] = _body.Joints[joints[i]].Position.X;
                 cbody[3 * i + 1] = _body.Joints[joints[i]].Position.Y;
                 cbody[3 * i + 2] = _body.Joints[joints[i]].Position.Z;
-                frameNo++;
             }
+            frameNo++;
         }
 
         public void CutSpike(Body _body)
@@ -399,8 +398,8 @@ namespace KinectStreams
                     flag[i] = 0;
                 }
             }
-            ppbody = pbody;
-            pbody = cbody;
+            pbody.CopyTo(ppbody, 0);
+            cbody.CopyTo(pbody, 0);
         }
 
         public void WriteSkeleton(string filePath, string time)
